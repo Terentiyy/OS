@@ -1,8 +1,0 @@
-[
-{
-  "directory": "C:/Users/Админ/Desktop/OS/build",
-  "command": "C:\\MinGW\\bin\\gcc.exe   -g -o CMakeFiles\\main.dir\\main.c.obj -c C:\\Users\\Админ\\Desktop\\OS\\OS\\lab2\\src\\main.c",
-  "file": "C:/Users/Админ/Desktop/OS/OS/lab2/src/main.c",
-  "output": "CMakeFiles/main.dir/main.c.obj"
-}
-]

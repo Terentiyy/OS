@@ -1,51 +1,132 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
+#include <stdbool.h>
 
-#define MAX_INPUT 512
-#define MAX_NUMBERS 100
+bool check_on_zeros(char* data, int size);
+float calc_func(char* data, int size);
 
-int main() {
-  char filename[MAX_INPUT];
-  char data[MAX_INPUT];
+int main(int argc, char *argv[]){
+    char  *input_data = malloc(sizeof(char) * 50);
+    char buf;
+    char   filename[20];
+    int    counter = 0;
+    size_t   size = 50;
+    int i = 0;
+    char ch;
+    while (read(STDIN_FILENO, &buf, 1) > 0){
 
-  float numbers[MAX_NUMBERS];
+            if (buf != '|'){
+            filename[i++] = buf;
+            } else{
+                break;
+            }
+    }
+    while (read(STDIN_FILENO, &buf, 1) > 0){
+        if (counter < size){
+                input_data[counter++] = buf;
+            } else{
+                size *= 2;
+                char *buffer = realloc(input_data, size);
+                if (buffer == NULL) {
+                    perror("realloc failed");
+                    free(input_data); 
+                    _exit(EXIT_FAILURE);
+                }else{
+                    input_data = buffer;
+                    input_data[counter++] = buf;
+                }
+            }
+    }
+    input_data[counter] = '\0';
+    float tmp;
+    if (check_on_zeros(input_data, size) == 0){
+        tmp = calc_func(input_data, size);
+    } else{
+        perror("Cannot devide by zero\n");
+        free(input_data);
+        _exit(EXIT_FAILURE);
+    }
 
-  int count = 0;
-  float result = 0.0;
+    filename[i] = '\0';
+    FILE *fptr;
+    fptr = fopen(filename, "w");
+    fprintf(fptr, "%f", tmp);
+    fclose(fptr);
+    free(input_data);
+    _exit(EXIT_SUCCESS);
+}
 
-  ssize_t filename_len = read(STDIN_FILENO, filename, MAX_INPUT);
-  read(STDIN_FILENO, data, MAX_INPUT);
+bool check_on_zeros(char* data, int size){
+    for (int i = 1; i < size; i++){
+        if (data[i] == '0'){
+            if (data[i+1] == ' ' || data[i+1] == '\0' || data[i+1] == '\n'){
+                if (data[i-1] == ' '){
+                    return true;
+                }
+            }
+            if (data[i+1] == '.' || data[i+1] == ','){
+                int non_zeros_counter = 0;
+                i += 2;
+                while(data[i] != ' ' && data[i] != '\0'){
+                    char sth = data[i++];
+                    if (sth != '0'){
+                        if (sth != '\0'){
+                            if (sth != '\n'){
+                                non_zeros_counter += 1;
+                            }
+                        }
+                    }
+                }
+                if (non_zeros_counter == 0){
+                    return true;
+                }
+                non_zeros_counter = 0;
+            }
+        }
+    }
+    return false;
+}
 
-  filename[filename_len] = '\0';
-
-  char *newline = strchr(data, '\n');
-  if (newline) {
-    *newline = '\0';
-  }
-
-  char *ptr = data;
-  float num;
-  while (count < MAX_NUMBERS && sscanf(ptr, "%f", &num) == 1) {
-    numbers[count++] = num;
-
-    while (*ptr != ' ' && *ptr != '\0') ptr++;
-    while (*ptr == ' ') ptr++;
-  }
-
-  for (int i = 0; i < count; i++) { result += numbers[i]; }
-
-  FILE *file = fopen(filename, "w");
-  if (file == NULL) {
-    perror("Ошибка при открытии файла");
-    return 1;
-  }
-
-  fprintf(file, "%.2f\n", result);
-
-  fclose(file);
-
-  printf("Данные успешно записаны в файл: %s\n", filename);
-
-  return 0;
+float calc_func(char* data, int size){
+    int to_alloc = 100;
+    char *buffer = malloc(sizeof(char) * to_alloc);
+    int j = 0;
+    char ch;
+    float first_number;
+    bool flag = false;
+    float number = 1;
+    float tmp = 0;
+    for (int i = 0; i < size; i++){
+        if (data[i] != '\0'){
+            while ((ch = data[i]) != ' ' && ch != '\n' && ch != '\0') {
+                buffer[j] = ch;
+                j++;
+                i++;
+                if (i >= size){
+                    break;
+                }
+            }
+            if (flag == false){
+                sscanf(buffer, "%f", &first_number);
+                number = first_number;
+                flag = true;
+            }else{
+                sscanf(buffer, "%f", &tmp);
+                number = number / tmp;
+            }
+            j = 0;
+            while (buffer[j] != '\0'){
+                buffer[j++] = ' ';
+                if (j >= to_alloc){
+                    break;
+                }
+            }
+            j = 0;
+        }else{
+            break;
+        }
+    }
+    free(buffer);
+    return number;
 }

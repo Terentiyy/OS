@@ -1,3 +1,0 @@
-C:/Users/Админ/Desktop/OS/build/CMakeFiles/main.dir
-C:/Users/Админ/Desktop/OS/build/CMakeFiles/edit_cache.dir
-C:/Users/Админ/Desktop/OS/build/CMakeFiles/rebuild_cache.dir
